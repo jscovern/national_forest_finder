@@ -9,6 +9,7 @@ $(document).ready(function() {
 });
 
 var organizationsArray=[];
+var orgIDIterator = 0;
 
 
 function getAllOrganizations() {
@@ -26,9 +27,7 @@ function getAllOrganizations() {
 				type: "POST",
 				data: JSON.stringify(organizationsArray),
 				success: function(data) {
-					console.log("in the gov org post ");
-					loopThroughOrgIDs(organizationsArray);
-					// getAllRecAreasForOrgID(organizationsArray);
+					loopThroughOrgIDs(organizationsArray,orgIDIterator);
 					console.log("orgarray: "+organizationsArray[0].OrgID);
 				},
 				error: function(data,error) {
@@ -49,43 +48,34 @@ function destroyAllRecAreas() {
 	});
 }
 
-function getAllRecAreas() {
-	$.ajax({
-		url: "https://ridb.recreation.gov/api/v1/recareas",
-		type: "GET",
-		headers: {apiKey:"A38F257A69A2468B9F07946FE95D911E"},
-		success: function(jsonData) {
-			console.log(jsonData);
-		}		
-	});
-}
-
 var recAreas =[];
-function loopThroughOrgIDs(orgArray) {
-	recAreas=[];
-	for (var i=0; i<orgArray.length; i++) {
-		console.log("in the loopthroughids for loop, on organization id: "+orgArray[i].OrgID);
-		getAllRecAreasForOrgID(orgArray[i].OrgID);
+var checker=0;
+function loopThroughOrgIDs(orgArray,orgIDIterator) {
+	if(orgIDIterator < orgArray.length) {
+		checker++;
+		console.log("in the loop through orgids, and this is the "+checker+" time I've been in here");
+		getAllRecAreasForOrgID(orgArray[orgIDIterator].OrgID,orgArray);
 	}
 }
 var offsetAmount = 0;
-function getAllRecAreasForOrgID(orgID) {
+function getAllRecAreasForOrgID(orgID,orgArray) {
 	console.log("got into the getallrecareasfororgid, with an orgid of "+orgID);
 	$.ajax({
 		url: "https://ridb.recreation.gov/api/v1/organizations/"+orgID+"/recareas?offset="+offsetAmount,
 		type: "GET",
 		headers: {apiKey:"A38F257A69A2468B9F07946FE95D911E"},
 		success: function(jsonData) {
-			jsonData.RECDATA.forEach(function(rec) {
-				recAreas.push(rec);
-				console.log(recAreas.length);
-			});
+			Array.prototype.push.apply(recAreas,jsonData.RECDATA); //this is supposed to push all the jsonData array records into the recAreas array at once
+			console.log("recAreas length is "+recAreas.length);
 			console.log("in the success function of getallrecareasfororgid w/ an offset: "+offsetAmount+" and orgID: "+orgID);
-			if(jsonData.RECDATA.length<50 && offsetAmount<=1500) {
+			if(jsonData.RECDATA.length===50) { //if this is still 50, we want to go get data for the same orgid so I'm not updating the orgIDIterator
+				console.log("got "+jsonData.RECDATA.length+" records back from the gov api this time for org "+orgID);
 				offsetAmount+=50;
-				getAllRecAreasForOrgID(orgID);
+				loopThroughOrgIDs(orgArray,orgIDIterator);
 			} else {
 				offsetAmount = 0;
+				orgIDIterator++;
+				loopThroughOrgIDs(orgArray,orgIDIterator);
 				console.log("in the else of success, with an orgID of "+orgID+" and an array length of "+jsonData.RECDATA.length);
 			}
 		}

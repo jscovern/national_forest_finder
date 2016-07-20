@@ -49,12 +49,29 @@ function destroyAllRecAreas() {
 }
 
 var recAreas =[];
+var recAreasForOrgID = [];
 var checker=0;
+var recAreaObjs = [];
 function loopThroughOrgIDs(orgArray,orgIDIterator) {
 	if(orgIDIterator < orgArray.length) {
 		checker++;
 		console.log("in the loop through orgids, and this is the "+checker+" time I've been in here");
 		getAllRecAreasForOrgID(orgArray[orgIDIterator].OrgID,orgArray);
+	} else { //once we get in here, it means we've gotten all the data and need to send it to Ruby to post
+		console.log(recAreas);
+		console.log(recAreaObjs);
+		$.ajax({
+			url: "/govrecareaspost",
+			type: "POST",
+			contentType: 'application/json',
+			data: JSON.stringify(recAreaObjs),
+			success: function(data) {
+				console.log("successful recarea post returned "+data);
+			},
+			error: function(first,second,third,error) {
+				console.log("error posting recareas: "+error);
+			}
+		});
 	}
 }
 var offsetAmount = 0;
@@ -66,13 +83,16 @@ function getAllRecAreasForOrgID(orgID,orgArray) {
 		headers: {apiKey:"A38F257A69A2468B9F07946FE95D911E"},
 		success: function(jsonData) {
 			Array.prototype.push.apply(recAreas,jsonData.RECDATA); //this is supposed to push all the jsonData array records into the recAreas array at once
+			Array.prototype.push.apply(recAreasForOrgID,jsonData.RECDATA);
 			console.log("recAreas length is "+recAreas.length);
 			console.log("in the success function of getallrecareasfororgid w/ an offset: "+offsetAmount+" and orgID: "+orgID);
 			if(jsonData.RECDATA.length===50) { //if this is still 50, we want to go get data for the same orgid so I'm not updating the orgIDIterator
 				console.log("got "+jsonData.RECDATA.length+" records back from the gov api this time for org "+orgID);
 				offsetAmount+=50;
 				loopThroughOrgIDs(orgArray,orgIDIterator);
-			} else {
+			} else { //if we're in this else, it means it's time to move on to another orgID, so we set the offsetamount back to 0 and increment the orgiditerator
+				recAreaObjs.push({orgIDArray: recAreasForOrgID, orgID: orgID});
+				recAreasForOrgID=[];
 				offsetAmount = 0;
 				orgIDIterator++;
 				loopThroughOrgIDs(orgArray,orgIDIterator);

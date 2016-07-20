@@ -1,0 +1,21 @@
+<div id="loginForm">
+		<form method="GET" action="/login" id="login">
+			<input type="text" name="username" placeholder="Enter Username" id="usernameLogin" required>
+			<input type="password" name="password" placeholder="Enter Password" id="passwordLogin" required>
+			<input type="submit" name="submit" id="submitLogin">
+		</form>
+	</div>
+	<div id="createUserForm">
+		<form method="POST" action="/login" id="createUser">
+			<input type="text" name="username" placeholder="Select Username" id="usernameCreate" required>
+			<input type="password" name="password" placeholder="Select Password" id="passwordCreate" required>
+			<input type="email" name="email" placeholder="Enter Email" id="emailCreate" required>
+			<input type="text" name="name" placeholder="Enter Your First and Last Names" id="nameCreate" required>
+			<input type="submit" name="submitCreate" id="submitCreate">
+		</form>
+	</div>
+	<div id="loginError"></div>
+	<div id="loginSuccess" class="hidden"></div>
+	<div id="map" class="hidden"></div>
+<!-- Google Maps API -->
+		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBHLett8djBo62dDXj0EjCimF8Rd6E8cxg&callback=initMap" async defer></script>

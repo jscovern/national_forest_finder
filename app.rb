@@ -2,11 +2,8 @@ class Users < Sinatra::Base
 	require 'json'
 
 	get '/' do
-		send_file File.expand_path('index.html', settings.public_folder) #this is so sinatra can serve my index.html static file
-	end
-
-  get '/refreshGovData' do
-    send_file File.expand_path('refreshGovData.html', "./")
+		# send_file File.expand_path('index.html', settings.public_folder) #this is so sinatra can serve my index.html static file
+	   erb :index
   end
 
 	post '/login' do

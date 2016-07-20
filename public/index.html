@@ -2,14 +2,15 @@
 <html>
 <head>
 	<title>National Forest Finder</title>
+	<link rel="stylesheet" type="text/css" href="style/style.css">
 	<script type="text/javascript" src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
 	<script type="text/javascript" src="scripts/clientJS.js"></script>
 </head>
 <body>
 	<div id="loginForm">
 		<form method="GET" action="/login" id="login">
-			<input type="text" name="username" placeholder="Enter Username" required>
-			<input type="password" name="password" placeholder="Enter Password" required>
+			<input type="text" name="username" placeholder="Enter Username" id="usernameLogin" required>
+			<input type="password" name="password" placeholder="Enter Password" id="passwordLogin" required>
 			<input type="submit" name="submit" id="submitLogin">
 		</form>
 	</div>
@@ -22,5 +23,10 @@
 			<input type="submit" name="submitCreate" id="submitCreate">
 		</form>
 	</div>
+	<div id="loginError"></div>
+	<div id="loginSuccess" class="hidden"></div>
+	<div id="map" class="hidden"></div>
 </body>
+<!-- Google Maps API -->
+		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBHLett8djBo62dDXj0EjCimF8Rd6E8cxg&callback=initMap" async defer></script>
 </html>

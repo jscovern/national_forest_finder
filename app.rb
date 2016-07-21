@@ -32,7 +32,7 @@ class Users < Sinatra::Base
         {:existsAlready => true, :usernameExists => usernameExists, :emailExists => emailExists}.to_json
   		else
         content_type 'application/json'
-  			{existsAlready => false}.to_json
+  			{:existsAlready => false}.to_json
   		end
   	end
 

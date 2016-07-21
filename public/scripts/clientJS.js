@@ -60,7 +60,7 @@ function checkIfUserExists(submit_this) {
 	var new_email = $("#emailCreate").val();
 	var url = '/user/'+new_username+"/"+new_email;
 	$.get(url,"",function onSuccess(data) {
-		if(!data[":existsAlready"]) {
+		if(data[":existsAlready"]) {
 			var errorMessage = "";
 			if (data.usernameExists) {
 				errorMessage +="The username you have chosen already exists. Please try another! ";

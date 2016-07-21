@@ -10,7 +10,36 @@ $(document).ready(function() {
 		event.preventDefault();
 		checkUsernamePassword();
 	});
+	$("#existUserLink").on('click', function(event) {
+		event.preventDefault();
+		$("#loginForm").removeClass('hidden');
+		$("#createUserForm").addClass('hidden');
+	});
+	$("#newUserLink").on('click', function(event) {
+		event.preventDefault();
+		$("#createUserForm").removeClass('hidden');
+		$('#loginForm').addClass('hidden');
+		$('#usernameCreate').focus();
+	});
 });
+
+function getDBData(){
+	$.ajax({
+		url: '/govorgs',
+		type: "GET",
+		success: function(data) {
+			$.ajax({
+				url: '/getrecareas',
+				type:"GET",
+				success: function(data) {
+					console.log("not quite sure why I did this");
+				}
+			});
+		}
+	});
+	$.get('/govorgs');
+	$.get('/recareas');
+}
 
 function ajaxRequest(submit_this) {
 	var data = submit_this.serialize();
@@ -32,7 +61,6 @@ function checkIfUserExists(submit_this) {
 	var url = '/user/'+new_username+"/"+new_email;
 	$.get(url,"",function onSuccess(data) {
 		if(!data[":existsAlready"]) {
-			console.log("in the data.existsAlready. existsAlready: "+data.existsAlready+" and usernameExists: "+data.usernameExists+" and emailExists: "+data.emailExists);
 			var errorMessage = "";
 			if (data.usernameExists) {
 				errorMessage +="The username you have chosen already exists. Please try another! ";
@@ -42,7 +70,6 @@ function checkIfUserExists(submit_this) {
 			}
 			$("#loginError").text("Sorry, we can't create an account for you! "+errorMessage);
 		} else {
-			console.log("in the data.existsAlready else statement - meaning it's a new username and email");
 			ajaxRequest(submit_this); //posts a new user to the DB
 		}
 	});
@@ -54,12 +81,9 @@ function checkUsernamePassword() {
 	var url = '/user/login/'+username+"/"+password;
 	var message="";
 	$.get(url,"",function onSuccess(data) {
-		console.log("in the checkUsernamePassword onsuccess function, with the returned data: "+data.canLogin);
 		if(data.canLogin) { //the username and password matched what was in the DB
 			logUserIn(username,data.name,data.userid);
 		} else {
-			console.log("data.reason is "+data.reason);
-			console.log("the data.canLogin is "+data.canLogin);
 			if(data.reason==="username") {
 				message="The username you have entered does not exist in our records. Please try again!";
 			} else {
@@ -74,7 +98,10 @@ function logUserIn(username,name,userid) {
 	$("#loginForm").addClass('hidden');
 	$("#createUserForm").addClass('hidden');
 	$("#loginError").addClass('hidden');
+	$("#existUserLink").addClass('hidden');
+	$("#newUserLink").addClass('hidden');
 	$("#loginSuccess").removeClass('hidden');
+	$("govOrgCheckboxes").removeClass('hidden');
 	localStorage.setItem('username',username);
 	localStorage.setItem('name',name);
 	localStorage.setItem('userid',userid);
@@ -95,24 +122,32 @@ function clearLocalStorage() {
 	}
 }
 
+function moveToLoggedIn() {
+	$.ajax({
+		url: '/loggedin',
+		type: 'GET'
+	});
+}
+
 function initMap() {
 	var initialLocation;
 	var browserSupportFlag;
-	console.log("in the create map");
+	var myLat = 40.7128;
+	var myLng = 74.0059;
 
   var myOptions = {
     zoom: 6,
     mapTypeId: google.maps.MapTypeId.ROADMAP
   };
   var map = new google.maps.Map(document.getElementById("map"), myOptions);
-  console.log("after the var map");
 
 // Try W3C Geolocation (Preferred)
   if(navigator.geolocation) {
-  	console.log("in the navigator.geolocation "+navigator.geolocation);
     browserSupportFlag = true;
     navigator.geolocation.getCurrentPosition(function(position) {
       initialLocation = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+      myLat = initialLocation.latitude;
+      myLng = initialLocation.longitude;
       map.setCenter(initialLocation);
     }, function() {
       handleNoGeolocation(browserSupportFlag);
@@ -134,4 +169,58 @@ function initMap() {
     }
     map.setCenter(initialLocation);
   }
+  getMarkersWithinDistance(20000000000000000,myLat,myLng);
+
+  function getMarkersWithinDistance(distance,initLat,initLng) {
+  	$.ajax({
+  		url: "/getrecareas",
+  		type: "GET",
+  		success: function(recAreasArray) {
+  			initLocation = new google.maps.LatLng(initLat,initLng);
+  			recAreasArray.forEach(function(recArea){
+  				if(recArea.latitude !== null && recArea.longitude!== null) {
+	  				var myLatLng = new google.maps.LatLng(recArea.latitude,recArea.longitude);
+	  				if (google.maps.geometry.spherical.computeDistanceBetween(initLocation,myLatLng) * 0.000621371192 <= distance) { //this turns it into a miles calculation from meters
+	  					var marker = new google.maps.Marker({position: {lat: recArea.latitude, lng: recArea.longitude}, map: map, title: recArea.name});
+  						google.maps.event.addListener(marker, 'click', function() {
+  							event.preventDefault();
+  							console.log(this.getTitle());
+  							$.ajax({
+  								url: '/recareabylatlng/'+this.getTitle(),
+  								type: "GET",
+  								// data: JSON.stringify({lat: this.position.lat(), lng: this.position.lng()}),
+  								success: function addFavorite(data){
+  									console.log('in the addfavorite, which is in the success of getting the title of a marker');
+  									$.ajax({
+  										url: '/postFavorite',
+  										type: 'POST',
+  										data: JSON.stringify({recareaid: data.recareaID, userid: localStorage.getItem('userid')}),
+  										success: function(data) {
+  											console.log('in the postfavorite success function');
+  										}
+  									});
+  									console.log(data);
+  								}
+  							});
+  						});
+	  				}
+	  			}
+  			});
+  		}
+  	});
+  }
+}
+
+function getOrganizations() {
+	$.ajax({
+		url: "/govorgs",
+		type: "GET",
+		success: function(data) {
+			console.log('success in get organizations');
+			// $("govOrgCheckboxes").append(data);
+		},
+		error: function(error) {
+			console.log('error in the getOrganizations: '+error);
+		}
+	});
 }

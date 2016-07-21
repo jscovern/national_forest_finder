@@ -1,21 +1,55 @@
-<div id="loginForm">
-		<form method="GET" action="/login" id="login">
-			<input type="text" name="username" placeholder="Enter Username" id="usernameLogin" required>
-			<input type="password" name="password" placeholder="Enter Password" id="passwordLogin" required>
-			<input type="submit" name="submit" id="submitLogin">
-		</form>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-xs-8 col-xs-offset-2">
+		<div class="row">
+			<a id="existUserLink" href="">Existing User Login</a>
+			<a id="newUserLink" href="">New User</a>
+		</div>
+			<div id="loginForm" class="center-block">
+				<form method="GET" action="/login" id="login">
+				<div class="row">
+					<input type="text" name="username" placeholder="Enter Username" id="usernameLogin" required autofocus>
+				</div>
+				<div class="row">
+					<input type="password" name="password" placeholder="Enter Password" id="passwordLogin" required>
+				</div>
+				<div class="row">
+					<input type="submit" name="submit" id="submitLogin">
+				</div>
+				</form>
+			</div>
+			<div id="createUserForm" class='center-block hidden'>
+				<form method="POST" action="/login" id="createUser">
+				<div class="row">
+					<input type="text" name="username" placeholder="Select Username" id="usernameCreate" required autofocus>
+				</div>
+				<div class="row">
+					<input type="password" name="password" placeholder="Select Password" id="passwordCreate" required>
+				</div>
+				<div class="row">
+					<input type="email" name="email" placeholder="Enter Email" id="emailCreate" required>
+				</div>
+				<div class="row">
+					<input type="text" name="name" placeholder="Enter Your First and Last Names" id="nameCreate" required>
+				</div>
+				<div class="row">
+					<input type="submit" name="submitCreate" id="submitCreate">
+				</div>
+				</form>
+			</div>
+		</div>
 	</div>
-	<div id="createUserForm">
-		<form method="POST" action="/login" id="createUser">
-			<input type="text" name="username" placeholder="Select Username" id="usernameCreate" required>
-			<input type="password" name="password" placeholder="Select Password" id="passwordCreate" required>
-			<input type="email" name="email" placeholder="Enter Email" id="emailCreate" required>
-			<input type="text" name="name" placeholder="Enter Your First and Last Names" id="nameCreate" required>
-			<input type="submit" name="submitCreate" id="submitCreate">
-		</form>
+	<div class="row">
+		<div id="loginError"></div>
 	</div>
-	<div id="loginError"></div>
-	<div id="loginSuccess" class="hidden"></div>
-	<div id="map" class="hidden"></div>
+	<div class="row">
+		<div id="loginSuccess" class="hidden"></div>
+	</div>
+	<div class="row">
+		<div id="map" class="hidden col-md-10 col-md-offset-1"></div>
+	</div>
+
+</div>
 <!-- Google Maps API -->
-		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBHLett8djBo62dDXj0EjCimF8Rd6E8cxg&callback=initMap" async defer></script>
+<!-- 	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBHLett8djBo62dDXj0EjCimF8Rd6E8cxg&callback=initMap&libraries=geometry" async defer></script> -->
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyBHLett8djBo62dDXj0EjCimF8Rd6E8cxg&libraries=geometry" async defer></script>

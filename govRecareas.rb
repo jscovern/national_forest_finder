@@ -26,19 +26,18 @@ class Govrecareas < Sinatra::Base
 		return "hello"
 	end
 
+	get "/getrecareas" do 
+        content_type 'application/json'
+		Govrecarea.all.to_json
+		# erb :home
+	end
+
+	get '/recareabylatlng/:title' do
+		title = params[:title]
+		favorite = Govrecarea.find_by name: title
+		puts favorite
+		content_type 'application/json'
+		favorite.to_json
+	end
+
 end
-
-				# recAreaObjs.push({orgIDArray: recAreasForOrgID, orgID: orgID});
-
-
-# Govorganization.destroy_all
-# 		request.body.rewind
-# 		govOrgsArray = request.body.read
-# 		orgHashesArray = JSON.parse(govOrgsArray)
-		
-# 		orgHashesArray.each do |govOrg|
-# 			newOrg = Govorganization.new
-# 			newOrg.orgid = govOrg["OrgID"]
-# 			newOrg.orgname = govOrg["OrgName"]
-# 			newOrg.orgabbrev = govOrg["OrgAbbrevName"]
-# 			newOrg.save

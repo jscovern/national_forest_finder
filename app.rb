@@ -12,6 +12,10 @@ class Users < Sinatra::Base
 	    User.create(new_user)
   	end
 
+    # get '/loggedin' do
+    #   erb :loggedin
+    # end
+
   	get '/user/:username/:email' do
   		user_username = User.find_by username: params[:username]
   		user_email = User.find_by email: params[:email]

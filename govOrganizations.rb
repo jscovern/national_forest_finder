@@ -22,4 +22,16 @@ class Govorganizations < Sinatra::Base
 
 		return "hello"
 	end
+
+	get '/govorgs' do
+		@gov_orgs = Govorganization.all
+	end
+
+	get '/govorgs' do 
+		@gov_orgs_html = '<% @gov_orgs.each do [gov_org] %>
+				<input type="checkbox" name="orgIDs" value=<% gov_org["orgname"] %> data-id = <% gov_org["orgid"] %> checked><%= gov_org["orgname"] %></input>
+			<% end %>'
+		return @gov_orgs_html
+		# erb :index
+	end
 end

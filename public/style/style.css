@@ -7,3 +7,63 @@
 	/*width:500px;*/
 	border: 1px solid black;
 }
+
+#natForTitle {
+	text-align: center;
+	opacity: 0.8;
+	margin-bottom: 4px;
+}
+
+#loginScreen {
+	background: rgba(255,255,255,0);
+}
+
+#modal-body {
+	width: 80%;
+}
+a {
+	color: #174f80;
+	padding-bottom: 6px;
+}
+
+#loginForm {
+	margin-top: 5px;
+}
+body {
+	background:url("../images/forestLoginBackground.jpg");
+	background-size:cover;
+	background-position:center center;
+	background-attachment:fixed
+}
+
+#existUserLink{
+	padding-right: 5px;
+	font-size: 16px;
+}
+
+#newUserLink{
+	padding-left: 5px;
+	font-size: 16px;
+}
+
+.aFavorite {
+	color: white;
+	line-height: 1.42857143;
+	vertical-align: middle;
+}
+
+#loginError {
+	color: #cacaca;
+	font-size: 18px;
+	font-weight: 700;
+}
+
+#loginSuccess {
+	color: grey;
+	opacity: 0.9;
+	text-align: center;
+}
+
+#favorites {
+	color: white;
+}

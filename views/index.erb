@@ -1,46 +1,48 @@
 <div class="container-fluid">
-	<div class="row">
-		<div class="col-xs-8 col-xs-offset-2">
-		<div class="row">
-			<a id="existUserLink" href="">Existing User Login</a>
-			<a id="newUserLink" href="">New User</a>
-		</div>
-			<div id="loginForm" class="center-block">
+	<div class="row" id="loginContainer">
+		<div class="col-md-4 col-md-offset-4" id="loginScreen">
+			<!-- <div class="row"> -->
+				<div class="text-center" id="userLinks">
+					<a id="existUserLink" href="">Existing User Login</a>
+					<a id="newUserLink" href="">New User</a>
+				</div>
+			<!-- </div> -->
+			<div id="loginForm" class="text-center">
 				<form method="GET" action="/login" id="login">
 				<div class="row">
-					<input type="text" name="username" placeholder="Enter Username" id="usernameLogin" required autofocus>
+					<input type="text" name="username" class="form-control" placeholder="Enter Username" id="usernameLogin" required autofocus>
 				</div>
 				<div class="row">
-					<input type="password" name="password" placeholder="Enter Password" id="passwordLogin" required>
+					<input type="password" name="password" class="form-control" placeholder="Enter Password" id="passwordLogin" required>
 				</div>
 				<div class="row">
-					<input type="submit" name="submit" id="submitLogin">
+					<input type="submit" class="btn btn-default" name="submit" id="submitLogin">
 				</div>
 				</form>
 			</div>
-			<div id="createUserForm" class='center-block hidden'>
+			<div id="createUserForm" class='text-center hidden'>
 				<form method="POST" action="/login" id="createUser">
 				<div class="row">
-					<input type="text" name="username" placeholder="Select Username" id="usernameCreate" required autofocus>
+					<input type="text" name="username" class="form-control" placeholder="Select Username" id="usernameCreate" required autofocus>
 				</div>
 				<div class="row">
-					<input type="password" name="password" placeholder="Select Password" id="passwordCreate" required>
+					<input type="password" name="password" class="form-control" placeholder="Select Password" id="passwordCreate" required>
 				</div>
 				<div class="row">
-					<input type="email" name="email" placeholder="Enter Email" id="emailCreate" required>
+					<input type="email" name="email" class="form-control" placeholder="Enter Email" id="emailCreate" required>
 				</div>
 				<div class="row">
-					<input type="text" name="name" placeholder="Enter Your First and Last Names" id="nameCreate" required>
+					<input type="text" name="name" class="form-control" placeholder="Enter Your First and Last Names" id="nameCreate" required>
 				</div>
 				<div class="row">
-					<input type="submit" name="submitCreate" id="submitCreate">
+					<input type="submit" class="btn btn-default" name="submitCreate" id="submitCreate">
 				</div>
 				</form>
 			</div>
 		</div>
 	</div>
 	<div class="row">
-		<div id="loginError"></div>
+		<div id="loginError" class="col-md-4 col-md-offset-4"></div>
 	</div>
 	<div class="row">
 		<div id="loginSuccess" class="hidden"></div>
@@ -48,7 +50,33 @@
 	<div class="row">
 		<div id="map" class="hidden col-md-10 col-md-offset-1"></div>
 	</div>
-
+	<div class="row">
+		<div id="favorites" class="col-md-10 col-md-offset-1 hidden"><h2>Favorites:</h2>
+			<div id="myFavorites">
+				<ul id="myFavoritesUL" class="list-unstyled"></ul>
+			</div>
+		</div>
+	</div>
+	<div class="modal" id="basicModal" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+            <h4 class="modal-title" id="myModalLabel">My Comments:</h4>
+            </div>
+            <div class="modal-body">
+	            <form name='userComments'>
+	            	<textarea id="modal-body" class="center-block" name='userComments'></textarea>
+	                <!-- <input type='text' id='modal-body' autofocus> -->
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveComment" data-dismiss="modal">Save Comment</button>
+        </div>
+    </div>
+  </div>
+</div>
 </div>
 <!-- Google Maps API -->
 <!-- 	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBHLett8djBo62dDXj0EjCimF8Rd6E8cxg&callback=initMap&libraries=geometry" async defer></script> -->

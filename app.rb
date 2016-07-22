@@ -2,7 +2,6 @@ class Users < Sinatra::Base
 	require 'json'
 
 	get '/' do
-		# send_file File.expand_path('index.html', settings.public_folder) #this is so sinatra can serve my index.html static file
 	   erb :index
   end
 
@@ -11,10 +10,6 @@ class Users < Sinatra::Base
   		new_user = URI::decode_www_form(request.body.read).to_h 
 	    User.create(new_user)
   	end
-
-    # get '/loggedin' do
-    #   erb :loggedin
-    # end
 
   	get '/user/:username/:email' do
   		user_username = User.find_by username: params[:username]

@@ -32,12 +32,19 @@ class Govrecareas < Sinatra::Base
 		# erb :home
 	end
 
-	get '/recareabylatlng/:title' do
-		title = params[:title]
-		favorite = Govrecarea.find_by name: title
-		puts favorite
+	# get '/recareabylatlng/:title' do
+	# 	title = params[:title]
+	# 	favorite = Govrecarea.find_by name: title
+	# 	puts favorite
+	# 	content_type 'application/json'
+	# 	favorite.to_json
+	# end
+
+	get '/favorites/:recareaid' do
+		recareaid = params[:recareaid]
+		currfavorite = Govrecarea.find_by recareaID: recareaid
 		content_type 'application/json'
-		favorite.to_json
+		currfavorite.to_json
 	end
 
 end

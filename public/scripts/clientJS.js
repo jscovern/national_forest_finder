@@ -2,9 +2,7 @@ $(document).ready(function() {
 	clearLocalStorage();
 	$(document).on('submit','#createUser',function(event){
 		event.preventDefault();
-		//ajaxRequest($(this));
 		checkIfUserExists($(this)); //returns a json object of either true, or false, for the key of "existsAlready"
-		// checkIfEmailExists($("#emailCreate"));
 	});
 	$(document).on('submit',"#login",function(event){
 		event.preventDefault();
@@ -21,27 +19,53 @@ $(document).ready(function() {
 		$('#loginForm').addClass('hidden');
 		$('#usernameCreate').focus();
 	});
+	$(document).on('click','.deleteFavorite',function(event) {
+		event.preventDefault();
+		deleteFavorite(this.getAttribute("data-id"),$(this).parent());
+	});
+	$("#saveComment").on('click',function() {
+		console.log('in the save comments click handler');
+		updateCommentsForFavorite(this);
+	});
+	$(document).on('click','.commentsButton',function() {
+		console.log('in the modal/comments button click handler with a data-id of '+this.getAttribute('data-id'));
+		getFavoriteComment(this);
+		$('#saveComment').attr('data-id',this.getAttribute('data-id')); //savecomments button doesn't have a data-id, so have to pass it one
+	});
+	$('#basicModal').on('hidden', function(){
+		console.log('in this handler jawn');
+	    $(this).data('modal', null);
+	});
+
 });
 
-function getDBData(){
+function getFavoriteComment(buttonClicked) {
 	$.ajax({
-		url: '/govorgs',
+		url: '/favorite/'+buttonClicked.getAttribute('data-id')+'/'+localStorage.getItem('userid'),
 		type: "GET",
 		success: function(data) {
-			$.ajax({
-				url: '/getrecareas',
-				type:"GET",
-				success: function(data) {
-					console.log("not quite sure why I did this");
-				}
-			});
+			console.log('modal-body '+data.comments);
+			$("#modal-body").text(data.comments);
+			$('a').find('[data-id='+buttonClicked.getAttribute('data-id')+']').modal();
+		},
+		error: function(error) {
+			console.log(error);
 		}
 	});
-	$.get('/govorgs');
-	$.get('/recareas');
 }
 
-function ajaxRequest(submit_this) {
+function updateCommentsForFavorite(buttonClicked) {
+	$.ajax({
+		url: '/favorite/'+buttonClicked.getAttribute('data-id')+'/'+localStorage.getItem('userid'),
+		type: 'PUT',
+		data: JSON.stringify({comments: $('#modal-body').val()}),
+		success: function(data) {
+			console.log('something');
+		}
+	});
+}
+
+function createNewUser(submit_this,username,email) {
 	var data = submit_this.serialize();
 	var url = submit_this.attr('action');
 	var type = submit_this.attr('method');
@@ -49,8 +73,10 @@ function ajaxRequest(submit_this) {
 		url: url,
 		type: type,
 		data: data,
-		success: function(html) {
-			console.log('ajax success');
+		success: function(returnData) {
+			$("#existUserLink").click();
+			$("#loginError").text("Your username has been created! Please login.");
+			//console.log("finish this by creating a new route to get their id from the username and email, and then in the success of that ajax, call to log them in automatically");
 		}
 	});
 }
@@ -70,7 +96,7 @@ function checkIfUserExists(submit_this) {
 			}
 			$("#loginError").text("Sorry, we can't create an account for you! "+errorMessage);
 		} else {
-			ajaxRequest(submit_this); //posts a new user to the DB
+			createNewUser(submit_this,new_username,new_email); //posts a new user to the DB
 		}
 	});
 }
@@ -105,9 +131,58 @@ function logUserIn(username,name,userid) {
 	localStorage.setItem('username',username);
 	localStorage.setItem('name',name);
 	localStorage.setItem('userid',userid);
-	$("#loginSuccess").text("Hello, "+localStorage.getItem('name')+"! Welcome back!");
+	getMyFavorites(userid);
+	$("#loginSuccess").html("<h4>Hello, "+localStorage.getItem('name')+"! Welcome back!</h4>");
 	$("#map").removeClass('hidden');
+	$("#favorites").removeClass('hidden');
 	initMap();
+}
+
+function getMyFavorites(userid) {
+	$.ajax({
+		url: '/myFavorites/'+userid,
+		type: "GET",
+		success: function(jsonData) {
+			getRecareaInfo(jsonData);
+		},
+		error: function(error) {
+			console.log(error);
+		}
+	});
+}
+
+function getRecareaInfo (favoritesArray) {
+	favoritesArray.forEach(function(favorite) {
+		$.ajax({
+			url: '/favorites/'+ favorite.recareaid,
+			type: "GET",
+			success: function(recarea) {
+				displayMyFavorites(recarea);
+			},
+			error: function(error) {
+				console.log(error);
+			}
+		});
+	});
+}
+
+function displayMyFavorites(favoritesRecarea) {
+	var favoriteHTML = "<li class='aFavorite' data-id="+favoritesRecarea.recareaID+"><h3 class='col-md-9'>Name: "+favoritesRecarea.name+" </h3><button class='deleteFavorite btn btn-default col-md-1' data-id="+favoritesRecarea.recareaID+">Delete</button><a href='#' class='btn btn-default col-md-2 commentsButton' data-toggle='modal' data-target='#basicModal' data-id="+favoritesRecarea.recareaID+">Edit Comments</a></li>";
+	$("#myFavoritesUL").append(favoriteHTML);
+}
+
+function deleteFavorite(recareaid,liToDelete) {
+	liToDelete.remove();
+	$.ajax({
+		url: '/deletefavorite/'+recareaid+"/"+localStorage.getItem('userid'),
+		type: 'DELETE',
+		success: function(data) {
+			console.log("deleted "+data);
+		},
+		error: function(error) {
+			console.log(error);
+		}
+	});
 }
 
 function clearLocalStorage() {
@@ -122,13 +197,6 @@ function clearLocalStorage() {
 	}
 }
 
-function moveToLoggedIn() {
-	$.ajax({
-		url: '/loggedin',
-		type: 'GET'
-	});
-}
-
 function initMap() {
 	var initialLocation;
 	var browserSupportFlag;
@@ -136,8 +204,9 @@ function initMap() {
 	var myLng = 74.0059;
 
   var myOptions = {
-    zoom: 6,
-    mapTypeId: google.maps.MapTypeId.ROADMAP
+    zoom: 8,
+    mapTypeId: google.maps.MapTypeId.ROADMAP,
+    styles: [{"featureType": "landscape", "stylers": [ { "gamma": 0.05 }, { "lightness": 82 } ]},{}]
   };
   var map = new google.maps.Map(document.getElementById("map"), myOptions);
 
@@ -181,46 +250,37 @@ function initMap() {
   				if(recArea.latitude !== null && recArea.longitude!== null) {
 	  				var myLatLng = new google.maps.LatLng(recArea.latitude,recArea.longitude);
 	  				if (google.maps.geometry.spherical.computeDistanceBetween(initLocation,myLatLng) * 0.000621371192 <= distance) { //this turns it into a miles calculation from meters
+	  					var infoContent = "<div class='markerTitle'><h5>"+recArea.name+"</h5></div><div><button class='addFavorite btn btn-info center-block' data-name='"+recArea.name+"' data-recareaID='"+recArea.recareaID+"'>Add to Favorites</button></div>";
+	  					var infoWindow = new google.maps.InfoWindow({content: infoContent});
 	  					var marker = new google.maps.Marker({position: {lat: recArea.latitude, lng: recArea.longitude}, map: map, title: recArea.name});
   						google.maps.event.addListener(marker, 'click', function() {
   							event.preventDefault();
-  							console.log(this.getTitle());
-  							$.ajax({
-  								url: '/recareabylatlng/'+this.getTitle(),
-  								type: "GET",
-  								// data: JSON.stringify({lat: this.position.lat(), lng: this.position.lng()}),
-  								success: function addFavorite(data){
-  									console.log('in the addfavorite, which is in the success of getting the title of a marker');
-  									$.ajax({
-  										url: '/postFavorite',
-  										type: 'POST',
-  										data: JSON.stringify({recareaid: data.recareaID, userid: localStorage.getItem('userid')}),
-  										success: function(data) {
-  											console.log('in the postfavorite success function');
-  										}
-  									});
-  									console.log(data);
-  								}
-  							});
+  							infoWindow.open(map,this);
   						});
 	  				}
 	  			}
   			});
   		}
   	});
+  	$(document).on('click',".addFavorite",function(event){
+		event.preventDefault();
+		addToFavoritesDB(this);
+	});
+
   }
 }
 
-function getOrganizations() {
+function addToFavoritesDB(buttonself) {
 	$.ajax({
-		url: "/govorgs",
-		type: "GET",
+		url: '/postFavorite',
+		type: 'POST',
+		data: JSON.stringify({recareaid: String(buttonself.getAttribute("data-recareaID")), userid: localStorage.getItem('userid')}),
 		success: function(data) {
-			console.log('success in get organizations');
-			// $("govOrgCheckboxes").append(data);
-		},
-		error: function(error) {
-			console.log('error in the getOrganizations: '+error);
+			if(data.existsAlready) {
+				alert("You already have this is a favorite!");
+			} else {
+				getRecareaInfo([data.fav]);	
+			}
 		}
 	});
 }

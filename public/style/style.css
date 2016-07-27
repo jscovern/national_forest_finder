@@ -67,3 +67,23 @@ body {
 #favorites {
 	color: white;
 }
+
+#govOrgScrollbox {
+	overflow-y: scroll;
+	height: 125px;
+	color: white;
+}
+
+.govOrg {
+	margin-right: 20px;
+}
+
+#govOrgs {
+	color: white;
+}
+
+#govOrgFilterButton {
+	position: absolute;
+	top: 10%;
+	right: 10%;
+}

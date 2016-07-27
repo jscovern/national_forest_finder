@@ -32,9 +32,14 @@ $(document).ready(function() {
 		getFavoriteComment(this);
 		$('#saveComment').attr('data-id',this.getAttribute('data-id')); //savecomments button doesn't have a data-id, so have to pass it one
 	});
-	$('#basicModal').on('hidden', function(){
-		console.log('in this handler jawn');
-	    $(this).data('modal', null);
+	$('#govOrgFilterButton').on('click', function(event) {
+		event.preventDefault();
+		var selectedGovOrgs = [];
+		$('#govOrgCheckboxes input:checked').each(function(){
+			selectedGovOrgs.push($(this).attr('data-id'));
+		});
+		console.log(selectedGovOrgs);
+		initMap(selectedGovOrgs);
 	});
 
 });
@@ -45,8 +50,8 @@ function getFavoriteComment(buttonClicked) {
 		type: "GET",
 		success: function(data) {
 			console.log('modal-body '+data.comments);
-			$("#modal-body").text(data.comments);
 			$('a').find('[data-id='+buttonClicked.getAttribute('data-id')+']').modal();
+			$("#modal-body").val(data.comments);
 		},
 		error: function(error) {
 			console.log(error);
@@ -135,7 +140,9 @@ function logUserIn(username,name,userid) {
 	$("#loginSuccess").html("<h4>Hello, "+localStorage.getItem('name')+"! Welcome back!</h4>");
 	$("#map").removeClass('hidden');
 	$("#favorites").removeClass('hidden');
-	initMap();
+	$("#govOrgs").removeClass('hidden');
+	getGovOrgs();
+	initMap("");
 }
 
 function getMyFavorites(userid) {
@@ -149,6 +156,33 @@ function getMyFavorites(userid) {
 			console.log(error);
 		}
 	});
+}
+
+function getGovOrgs() {
+	$.ajax({
+		url: '/govorgs',
+		type: "GET",
+		success: function(jsonData) {
+			console.log("this is the govorgs data "+jsonData[0]);
+			displayGovOrgs(jsonData);
+		},
+		error: function(error) {
+			console.log(error);
+		}
+	});
+}
+
+function displayGovOrgs(govOrgsArray) {
+	govOrgsArray.forEach(function(govOrg, index) {
+		var whichColumn;
+		if(index % 2 === 0) {
+			whichColumn = 1;
+		} else {
+			whichColumn = 2;
+		}
+		$("#govOrgsCol"+whichColumn).append("<input data-id='"+govOrg.orgid+"' type='checkbox' checked='checked' value='"+govOrg.orgname+"' class='govOrg'>"+govOrg.orgname+"<br>");
+	});
+	// <input data-id = "1" type="checkbox" checked="checked" value="BLM" class="govOrg">BLM<br>
 }
 
 function getRecareaInfo (favoritesArray) {
@@ -197,7 +231,7 @@ function clearLocalStorage() {
 	}
 }
 
-function initMap() {
+function initMap(govOrgsArray) {
 	var initialLocation;
 	var browserSupportFlag;
 	var myLat = 40.7128;
@@ -238,42 +272,62 @@ function initMap() {
     }
     map.setCenter(initialLocation);
   }
-  getMarkersWithinDistance(20000000000000000,myLat,myLng);
+  if(govOrgsArray==="") {
+  	getDataForMap();
+  } else {
+  	getFilteredDataForMap(govOrgsArray);
+  }
 
-  function getMarkersWithinDistance(distance,initLat,initLng) {
+  function getDataForMap() {
   	$.ajax({
   		url: "/getrecareas",
   		type: "GET",
   		success: function(recAreasArray) {
-  			initLocation = new google.maps.LatLng(initLat,initLng);
-  			recAreasArray.forEach(function(recArea){
-  				if(recArea.latitude !== null && recArea.longitude!== null) {
-	  				var myLatLng = new google.maps.LatLng(recArea.latitude,recArea.longitude);
-	  				if (google.maps.geometry.spherical.computeDistanceBetween(initLocation,myLatLng) * 0.000621371192 <= distance) { //this turns it into a miles calculation from meters
-	  					var infoContent = "<div class='markerTitle'><h5>"+recArea.name+"</h5></div><div><button class='addFavorite btn btn-info center-block' data-name='"+recArea.name+"' data-recareaID='"+recArea.recareaID+"'>Add to Favorites</button></div>";
-	  					var infoWindow = new google.maps.InfoWindow({content: infoContent});
-	  					var marker = new google.maps.Marker({position: {lat: recArea.latitude, lng: recArea.longitude}, map: map, title: recArea.name});
-  						google.maps.event.addListener(marker, 'click', function() {
-  							event.preventDefault();
-  							infoWindow.open(map,this);
-  						});
-	  				}
-	  			}
-  			});
+  			createMarkers(recAreasArray);
   		}
   	});
+  }
+
+  	function getFilteredDataForMap(govOrgsArray) {
+  		var orgData = "?"+govOrgsArray;
+  		console.log('data is: '+orgData);
+  		$.ajax({
+  			url: "/recareasbygovorg"+orgData,
+  			type: "GET",
+  			// data: orgData,
+  			success: function(recAreasArray) {
+  				createMarkers(recAreasArray);
+  			}
+  		});
+  	}
+
+  	function createMarkers(recAreasArray){
+		// initLocation = new google.maps.LatLng(initLat,initLng);
+		recAreasArray.forEach(function(recArea){
+			if(recArea.latitude !== null && recArea.longitude!== null) {
+				var myLatLng = new google.maps.LatLng(recArea.latitude,recArea.longitude);
+				var infoContent = "<div class='markerTitle'><h5>"+recArea.name+"</h5></div><div><button class='addFavorite btn btn-info center-block' data-name='"+recArea.name+"' data-recareaID='"+recArea.recareaID+"'>Add to Favorites</button></div>";
+				var infoWindow = new google.maps.InfoWindow({content: infoContent});
+				var marker = new google.maps.Marker({position: {lat: recArea.latitude, lng: recArea.longitude}, map: map, title: recArea.name});
+				google.maps.event.addListener(marker, 'click', function() {
+					event.preventDefault();
+					infoWindow.open(map,this);
+				});
+			}
+		});  
+  	}
+
   	$(document).on('click',".addFavorite",function(event){
 		event.preventDefault();
 		addToFavoritesDB(this);
 	});
-
-  }
 }
 
 function addToFavoritesDB(buttonself) {
 	$.ajax({
 		url: '/postFavorite',
 		type: 'POST',
+		contentType: "application/json",
 		data: JSON.stringify({recareaid: String(buttonself.getAttribute("data-recareaID")), userid: localStorage.getItem('userid')}),
 		success: function(data) {
 			if(data.existsAlready) {

@@ -32,6 +32,18 @@ class Govrecareas < Sinatra::Base
 		# erb :home
 	end
 
+	get '/recareasbygovorg' do
+		govOrgArray = request.query_string
+		govOrgArray = govOrgArray.split(",")
+		puts "in the get, and there gov orgs array is: #{govOrgArray}"
+		puts "after it"
+		puts "govorgarray length is #{govOrgArray.length}"
+		recs=Govrecarea.where(orgid: govOrgArray)
+		puts "recs is: #{recs}"
+		# content_type 'application/json'
+		# recs.to_json
+	end
+
 	# get '/recareabylatlng/:title' do
 	# 	title = params[:title]
 	# 	favorite = Govrecarea.find_by name: title

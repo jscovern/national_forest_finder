@@ -7,7 +7,7 @@ class Govorganizations < Sinatra::Base
 
 
 	post '/govorgs' do
-		Govorganization.destroy_all
+		Govorganization.destroy_all #need to do this b/c this route is used as part of a full data refresh with new govt data
 		request.body.rewind
 		govOrgsArray = request.body.read
 		orgHashesArray = JSON.parse(govOrgsArray)
@@ -24,14 +24,8 @@ class Govorganizations < Sinatra::Base
 	end
 
 	get '/govorgs' do
+		content_type 'application/json'
 		@gov_orgs = Govorganization.all
-	end
-
-	get '/govorgs' do 
-		@gov_orgs_html = '<% @gov_orgs.each do [gov_org] %>
-				<input type="checkbox" name="orgIDs" value=<% gov_org["orgname"] %> data-id = <% gov_org["orgid"] %> checked><%= gov_org["orgname"] %></input>
-			<% end %>'
-		return @gov_orgs_html
-		# erb :index
+		return @gov_orgs.to_json
 	end
 end
